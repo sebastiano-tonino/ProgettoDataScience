@@ -37,16 +37,17 @@ head(xResidenza)
 Andiamo ora ad analizzare il numero di iscritti selezionando ad esempio la provincia di udine:
 
 ```{r}
-library(dplyr)
-library(ggplot2)
-iscrittiUD <- iscrittiByProvincia("UDINE")
-(iscrittiUD)
-iscrittiUD[which.max(iscrittiUD$IscrittiTot),]
-iscrittiUD[which.min(iscrittiUD$IscrittiTot),]
-ggplot(iscrittiUD,aes(y=AnnoA,x=IscrittiTot)) +
-    geom_col()+
-    geom_text(aes(label = IscrittiTot)) 
-paste(("Media:"),mean(iscrittiUD$IscrittiTot) )
+library(dplyr) 
+library(ggplot2) 
+
+iscrittiUD <- iscrittiByProvincia("UDINE") 
+(iscrittiUD) 
+iscrittiUD[which.max(iscrittiUD$IscrittiTot),] 
+iscrittiUD[which.min(iscrittiUD$IscrittiTot),] 
+ggplot(iscrittiUD,aes(y=AnnoA,x=IscrittiTot)) +     
+  geom_col()+     
+  geom_text(aes(label = IscrittiTot))  
+paste(("Media:"),mean(iscrittiUD$IscrittiTot) ) 
 paste(("Varianza:"),var(iscrittiUD$IscrittiTot))
 ```
 
@@ -135,7 +136,89 @@ medie <- c(
   round(mean(db2020$PercentIscritti, na.rm=TRUE),digits = 2), 
   round(mean(db2021$PercentIscritti, na.rm=TRUE),digits = 2))
 dbMedie <- data.frame(anno, medie)
+medieAssoluto <- c(
+  round(mean(db2010$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2011$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2012$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2013$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2014$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2015$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2016$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2017$IscrittiTot, na.rm=TRUE),digits = 2),
+  round(mean(db2018$IscrittiTot, na.rm=TRUE),digits = 2),  
+  round(mean(db2019$IscrittiTot, na.rm=TRUE),digits = 2),  
+  round(mean(db2020$IscrittiTot, na.rm=TRUE),digits = 2), 
+  round(mean(db2021$IscrittiTot, na.rm=TRUE),digits = 2))
+dbMedieAssolute <- data.frame(anno, medieAssoluto)
+```
 
+```{r}
+Anno <- c(
+      '2010',
+      '2011', 
+      '2012', 
+      '2013', 
+      '2014', 
+      '2015', 
+      '2016', 
+      '2017', 
+      '2018', 
+      '2019', 
+      '2020', 
+      '2021' 
+    )
+Residenti <- c(
+  sum(db2010$Residenti,na.rm = TRUE),
+  sum(db2011$Residenti,na.rm = TRUE),
+  sum(db2012$Residenti,na.rm = TRUE),
+  sum(db2013$Residenti,na.rm = TRUE),
+  sum(db2014$Residenti,na.rm = TRUE),
+  sum(db2015$Residenti,na.rm = TRUE),
+  sum(db2016$Residenti,na.rm = TRUE),
+  sum(db2017$Residenti,na.rm = TRUE),
+  sum(db2018$Residenti,na.rm = TRUE),  
+  sum(db2019$Residenti,na.rm = TRUE),  
+  sum(db2020$Residenti,na.rm = TRUE), 
+  sum(db2021$Residenti,na.rm = TRUE))
+ResidentiAnno <- data.frame(Anno, Residenti)
+Iscritti <- c(
+  sum(db2010$IscrittiTot),
+  sum(db2011$IscrittiTot),
+  sum(db2012$IscrittiTot),
+  sum(db2013$IscrittiTot),
+  sum(db2014$IscrittiTot),
+  sum(db2015$IscrittiTot),
+  sum(db2016$IscrittiTot),
+  sum(db2017$IscrittiTot),
+  sum(db2018$IscrittiTot),  
+  sum(db2019$IscrittiTot),  
+  sum(db2020$IscrittiTot), 
+  sum(db2021$IscrittiTot))
+IscrittiPerAnno <- data.frame(Anno, Iscritti)
+```
+
+```{r}
+library(hrbrthemes)
+par(mfrow=c(2,2))
+ResidentiAnno %>%
+  ggplot(aes(Anno, Residenti/1000, group = 1)) +
+ geom_point(stat='identity',shape=21, color="black", fill="#69b3a2", size=6)+
+   geom_line(color="blue", stat = "identity") +
+  ggtitle("Residenti nella nazione ")+
+  labs(y = "Migliaia di abitanti", x = "Anno")+
+  theme_ipsum_ps()
+```
+
+```{r}
+par(mfrow=c(2,2))
+plotIscrittiAnno <- IscrittiPerAnno %>%
+  ggplot(aes(Anno, Iscritti, group = 1)) +
+ geom_point(stat='identity',shape=21, color="black", fill="#69b3a2", size=6)+
+   geom_line(color="blue", stat = "identity") +
+  ggtitle("Iscritti universitari")+
+  labs(y = "Iscritti", x = "Anno")+
+  theme_ipsum_ps()
+ggplotly(plotIscrittiAnno)
 ```
 
 Creiamo ora un istogramma con le medie delle percentuali di iscrizioni delle varie province per capire se le iscrizioni negli ultimi 10 anni è aumentata o diminuità.
@@ -145,7 +228,15 @@ Come possiamo notare dal istogramma le iscrizioni in precentuale sono rimaste re
 ```{r}
 ggplot(dbMedie,aes(y=medie,x=anno))+
     geom_histogram(stat='identity',fill="lightblue")+
-    geom_text(aes(label = medie), vjust = 1.5, colour = "black")
+    geom_text(aes(label = medie), vjust = 1.5, colour = "black")+
+    theme_tinyhand()+
+    ylab("Media percentuale di iscritti rispetto alla popolazione")+
+    xlab("Anno Accademico")
+```
+
+```{r}
+ggplot(dbMedieAssolute,aes(y=medieAssoluto,x=anno))+
+    geom_histogram(stat='identity',fill="lightblue")
 ```
 
 ## La Web APP
